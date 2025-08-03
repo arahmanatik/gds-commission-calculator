@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AeroTrip Net Fare Calculator</title>
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f2f2f2;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+      }
+
+      .container {
+        width: 400px;
+        margin: 20px;
+        padding: 20px;
+        border-radius: 8px;
+        background-color: #fff;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+      }
+
+      .citycom-logo {
+        width: 120px;
+      }
+
+      h2 {
+        color: rgb(71, 71, 71);
+        font-size: 16px;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 8px;
+        color: #555;
+      }
+
+      input {
+        width: calc(100% - 16px);
+        padding: 10px;
+        margin-bottom: 12px;
+        box-sizing: border-box;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 14px;
+      }
+
+      #gdsCommissionResult {
+        margin-top: 15px;
+        font-weight: bold;
+        font-size: 16px;
+        color: #333;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <img class="citycom-logo" src="citycom-logo.png" alt="Citycom Logo" />
+      <h2>Net Fare Calculator</h2>
+
+      <label for="baseFare">Base Fare:</label>
+      <input
+        type="number"
+        id="baseFare"
+        placeholder="Enter Base Fare"
+        oninput="calculateGDSCommission()"
+      />
+
+      <label for="tax">TAX:</label>
+      <input
+        type="number"
+        id="tax"
+        placeholder="Enter TAX"
+        oninput="calculateGDSCommission()"
+      />
+
+      <label for="ait">AIT (%):</label>
+      <input
+        type="number"
+        id="ait"
+        placeholder="Enter AIT"
+        value="0.3"
+        oninput="calculateGDSCommission()"
+      />
+
+      <label for="netAirlineFare">Net Airline Fare:</label>
+      <input
+        type="number"
+        id="netAirlineFare"
+        placeholder="Enter Net Airline Fare"
+        oninput="calculateGDSCommission()"
+      />
+
+      <div id="gdsCommissionResult">GDS Commission: 0.00%</div>
+    </div>
+
+    <script>
+      const baseFareInput = document.getElementById("baseFare");
+      const aitInput = document.getElementById("ait");
+      const taxInput = document.getElementById("tax");
+      const netAirlineFareInput = document.getElementById("netAirlineFare");
+      const gdsCommissionResult = document.getElementById(
+        "gdsCommissionResult"
+      );
+
+      function calculateGDSCommission() {
+        let baseFare = parseFloat(baseFareInput.value) || 0;
+        let aitPercentage = parseFloat(aitInput.value) || 0;
+        let tax = parseFloat(taxInput.value) || 0;
+        let netAirlineFare = parseFloat(netAirlineFareInput.value) || 0;
+
+        if (baseFare <= 0 || netAirlineFare <= 0) {
+          gdsCommissionResult.innerText = "GDS Commission: Invalid Input";
+          return;
+        }
+
+        // Solve for GDS commission amount (x)
+        // netAirlineFare = baseFare - x + AIT% * (baseFare + tax + x) + tax
+        // Rearranged: x = [baseFare + AIT%*(baseFare + tax) + tax - netAirlineFare] / (1 + AIT%)
+
+        let xNumerator =
+          baseFare +
+          (aitPercentage / 100) * (baseFare + tax) +
+          tax -
+          netAirlineFare;
+        let xDenominator = 1 + aitPercentage / 100;
+        let gdsCommission = xNumerator / xDenominator;
+
+        if (gdsCommission < 0 || gdsCommission > baseFare) {
+          gdsCommissionResult.innerText = "GDS Commission: Out of Range";
+          return;
+        }
+
+        let gdsCommissionPercent = (gdsCommission / baseFare) * 100;
+        gdsCommissionResult.innerText =
+          "GDS Commission: " + gdsCommissionPercent.toFixed(2) + "%";
+      }
+    </script>
+  </body>
+</html>
